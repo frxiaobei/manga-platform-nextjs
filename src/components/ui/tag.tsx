@@ -3,15 +3,15 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const tagVariants = cva(
-  "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold transition-colors uppercase tracking-wider",
+  "inline-flex items-center rounded-lg px-3 py-1 text-[10px] font-black transition-all duration-300 uppercase tracking-[0.2em] border",
   {
     variants: {
       variant: {
-        default: "border-transparent bg-ansha/20 text-ansha",
-        secondary: "border-transparent bg-white/5 text-white/60 hover:bg-white/10 hover:text-white",
-        outline: "text-white/40 border border-white/10",
-        success: "bg-emerald-500/20 text-emerald-500",
-        destructive: "bg-red-500/20 text-red-500",
+        default: "border-ansha/20 bg-ansha/10 text-ansha",
+        secondary: "border-white/10 bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-white",
+        outline: "border-white/10 text-muted-foreground bg-transparent",
+        success: "border-emerald-500/20 bg-emerald-500/10 text-emerald-500",
+        destructive: "border-red-500/20 bg-red-500/10 text-red-500",
       },
     },
     defaultVariants: {
