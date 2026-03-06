@@ -8,6 +8,7 @@ import { Mail, Lock, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { api, setAccessToken } from "@/lib/api-client";
+import { supabase } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -45,14 +46,18 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const response = await api.auth.googleUrl();
-      window.location.assign(response.url);
-    } catch (err: unknown) {
-      if (err && typeof err === "object" && "detail" in err) {
-        setError((err as { detail?: string }).detail ?? "无法发起 Google 登录，请稍后重试。");
-      } else {
-        setError("无法发起 Google 登录，请稍后重试。");
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      if (error) {
+        setError(error.message);
+        setGoogleRedirecting(false);
       }
+    } catch (err: unknown) {
+      setError("无法发起 Google 登录，请稍后重试。");
       setGoogleRedirecting(false);
     }
   };
