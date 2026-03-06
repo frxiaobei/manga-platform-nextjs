@@ -22,7 +22,7 @@
 | ORM | **Prisma** | 替代 SQLAlchemy |
 | 数据库 | **Supabase PostgreSQL** | 替代 Render PostgreSQL |
 | 认证 | **Supabase Auth** | 替代自定义 OAuth |
-| 图片存储 | **Cloudinary**（保持） | 已有配置，迁移零成本 |
+| 图片存储 | **Supabase Storage** | 全家桶统一，自带 CDN |
 | 状态管理 | **TanStack Query** | 数据 fetching |
 | 样式 | **Tailwind + shadcn/ui** | 已有 Tailwind |
 | 部署 | **Vercel** | 替代 Render |
@@ -47,7 +47,7 @@
 | `characters.py` | `api/characters/route.ts` | ⏳ |
 | `tags.py` | `api/tags/route.ts` | ⏳ |
 | `me.py` | `api/me/route.ts` | ⏳ |
-| `upload.py` | `api/upload/route.ts` (Cloudinary) | ⏳ |
+| `upload.py` | `api/upload/route.ts` (Supabase Storage) | ⏳ |
 | `checkout.py` | `api/checkout/route.ts` | ⏳ |
 | `coupons.py` | `api/coupons/route.ts` | ⏳ |
 | `webhook.py` | `api/webhook/route.ts` | ⏳ |
@@ -158,10 +158,8 @@ SUPABASE_SERVICE_ROLE_KEY=
 # Database (Supabase PostgreSQL)
 DATABASE_URL=
 
-# Cloudinary (保持)
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
+# Supabase Storage (统一使用 Supabase)
+# 无需额外配置，使用上面的 Supabase 凭据
 
 # Google OAuth (通过 Supabase)
 # 在 Supabase Dashboard 配置
