@@ -44,6 +44,7 @@ export async function GET(
     id: character.id,
     name: character.name,
     description: character.description,
+    price: Number(character.price),
     is_purchased: isPurchased,
     locked_asset_count: lockedAssetCount,
     assets,

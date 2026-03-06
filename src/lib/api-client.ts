@@ -74,6 +74,7 @@ export type ApiCharacterDetail = {
   id: string;
   name: string;
   description: string | null;
+  price: number;
   is_purchased: boolean;
   locked_asset_count: number;
   assets: Array<{
