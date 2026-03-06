@@ -1,12 +1,23 @@
 import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "角色坊 - 原创角色设计平台",
-  description: "汇集顶尖原画师的精品角色，从清冷仙子到霸道魔尊，每一个角色都拥有独特的灵魂与背景设定。",
+  description: "汇集顶尖原画师的精品角色，从清冷仙子到霸道魔尊，每一个 角色都拥有独特的灵魂与背景设定。",
 };
 
 export default function RootLayout({
@@ -16,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body className="min-h-dvh overflow-x-hidden bg-zinc-950 text-white selection:bg-ansha selection:text-white antialiased">
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans min-h-dvh overflow-x-hidden bg-zinc-950 text-white selection:bg-ansha selection:text-white antialiased`}>
         <Providers>
           <Header />
           <main className="pt-20 pb-20">{children}</main>
@@ -26,3 +37,4 @@ export default function RootLayout({
     </html>
   );
 }
+
