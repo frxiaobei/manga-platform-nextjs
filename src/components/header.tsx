@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, User } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser, getUserDisplayName } from "@/lib/auth-client";
 import { getAccessToken } from "@/lib/api-client";
@@ -17,87 +17,79 @@ export function Header() {
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   return (
-    <header className="fixed top-6 left-1/2 -translate-x-1/2 z-50 h-16 w-[calc(100%-3rem)] max-w-[1400px] glass rounded-2xl flex items-center px-6 md:px-8">
-      <div className="flex w-full items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 z-50 h-20 border-b border-white/5 bg-zinc-950/80 backdrop-blur-md">
+      <div className="mx-auto flex h-full max-w-[1400px] items-center justify-between px-6">
         <Link href="/" className="flex items-center gap-3 group" onClick={closeMobileMenu}>
-          <div className="size-10 rounded-xl bg-ansha flex items-center justify-center font-black text-xl shadow-[0_0_30px_rgba(230,126,34,0.4)] group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+          <div className="size-10 rounded-2xl bg-ansha flex items-center justify-center font-bold text-xl shadow-[0_0_20px_rgba(230,126,34,0.3)] group-hover:scale-110 transition-transform">
             M
           </div>
-          <span className="text-xl font-black tracking-tighter hidden sm:block">角色坊</span>
+          <span className="text-xl md:text-2xl font-bold tracking-tighter">角色坊</span>
         </Link>
-        
-        <nav className="hidden md:flex items-center gap-12">
-          <Link href="/" className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground hover:text-ansha transition-all duration-300">首页</Link>
-          <Link href="/characters" className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground hover:text-ansha transition-all duration-300">角色图库</Link>
-          
+        <nav className="hidden md:flex items-center gap-10">
+          <Link href="/" className="text-sm font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors">首页</Link>
+          <Link href="/characters" className="text-sm font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors">角色图库</Link>
           {isLoggedIn ? (
-            <Link href="/me" className="group flex items-center gap-3 pl-6 border-l border-white/10 ml-4">
-              <div className="text-right">
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-ansha transition-colors">Personal</p>
-                <p className="text-xs font-bold text-white/90">{getUserDisplayName(user?.email ?? "")}</p>
-              </div>
+            <Link href="/me" className="inline-flex items-center gap-3 rounded-2xl border border-white/10 px-4 py-2 hover:border-white/20 transition-colors">
               {user?.avatar ? (
-                <img src={user.avatar} alt={user.email} className="size-10 rounded-xl object-cover border border-white/10 group-hover:border-ansha transition-colors" />
+                <img src={user.avatar} alt={user.email} className="size-8 rounded-xl object-cover" />
               ) : (
-                <div className="size-10 rounded-xl bg-white/5 border border-white/10 text-xs font-bold flex items-center justify-center group-hover:border-ansha transition-colors">
-                  <User size={18} className="text-muted-foreground" />
+                <div className="size-8 rounded-xl bg-white/10 text-xs font-bold flex items-center justify-center">
+                  {getUserDisplayName(user?.email ?? "").slice(0, 1).toUpperCase()}
                 </div>
               )}
+              <span className="text-sm font-medium text-white/80">{getUserDisplayName(user?.email ?? "")}</span>
             </Link>
           ) : (
-            <Link href="/login" className="ml-4">
-              <Button size="sm" className="rounded-xl px-6 h-10 font-bold tracking-tight">登录账户</Button>
+            <Link href="/login">
+              <Button variant="secondary" className="rounded-2xl px-8 h-12">登录账户</Button>
             </Link>
           )}
         </nav>
-
         <button
           type="button"
           onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-          className="inline-flex md:hidden size-10 items-center justify-center rounded-xl glass text-white transition-all hover:scale-105 active:scale-95"
+          className="inline-flex md:hidden size-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition-colors hover:border-white/20 hover:bg-white/10"
           aria-label={isMobileMenuOpen ? "关闭导航菜单" : "打开导航菜单"}
+          aria-expanded={isMobileMenuOpen}
         >
-          {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
-
       {isMobileMenuOpen && (
-        <div className="absolute top-20 left-0 right-0 glass rounded-2xl p-6 md:hidden">
-          <nav className="flex flex-col gap-3">
+        <div className="md:hidden border-t border-white/10 bg-zinc-950/95 px-6 py-4">
+          <nav className="flex flex-col gap-2">
             <Link
               href="/"
               onClick={closeMobileMenu}
-              className="flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-colors group"
+              className="rounded-2xl border border-white/10 px-4 py-3 text-sm font-bold tracking-widest text-white/80 transition-colors hover:border-white/20 hover:text-white"
             >
-              <span className="text-sm font-black uppercase tracking-[0.2em]">首页</span>
-              <div className="size-2 rounded-full bg-ansha opacity-0 group-hover:opacity-100 transition-opacity" />
+              首页
             </Link>
             <Link
               href="/characters"
               onClick={closeMobileMenu}
-              className="flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-colors group"
+              className="rounded-2xl border border-white/10 px-4 py-3 text-sm font-bold tracking-widest text-white/80 transition-colors hover:border-white/20 hover:text-white"
             >
-              <span className="text-sm font-black uppercase tracking-[0.2em]">角色图库</span>
-              <div className="size-2 rounded-full bg-ansha opacity-0 group-hover:opacity-100 transition-opacity" />
+              角色图库
             </Link>
             {isLoggedIn ? (
               <Link
                 href="/me"
                 onClick={closeMobileMenu}
-                className="flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors"
+                className="inline-flex items-center gap-3 rounded-2xl border border-white/10 px-4 py-3 hover:border-white/20 transition-colors"
               >
                 {user?.avatar ? (
-                  <img src={user.avatar} alt={user.email} className="size-10 rounded-xl object-cover" />
+                  <img src={user.avatar} alt={user.email} className="size-8 rounded-xl object-cover" />
                 ) : (
-                  <div className="size-10 rounded-xl bg-white/10 flex items-center justify-center">
-                    <User size={20} />
+                  <div className="size-8 rounded-xl bg-white/10 text-xs font-bold flex items-center justify-center">
+                    {getUserDisplayName(user?.email ?? "").slice(0, 1).toUpperCase()}
                   </div>
                 )}
-                <span className="text-sm font-bold">{getUserDisplayName(user?.email ?? "")}</span>
+                <span className="text-sm font-medium text-white/80">{getUserDisplayName(user?.email ?? "")}</span>
               </Link>
             ) : (
-              <Link href="/login" onClick={closeMobileMenu} className="mt-2">
-                <Button className="w-full rounded-xl h-12 text-base font-bold">登录账户</Button>
+              <Link href="/login" onClick={closeMobileMenu}>
+                <Button variant="secondary" className="w-full rounded-2xl h-12">登录账户</Button>
               </Link>
             )}
           </nav>
