@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { Prisma } from "@prisma/client";
+import { CouponStatus, Prisma } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
 
   const userId = session.metadata?.user_id;
   const characterId = session.metadata?.character_id;
+  const couponId = session.metadata?.coupon_id?.trim() || null;
   const priceCents = session.amount_total ?? Number(session.metadata?.price_cents ?? 0);
 
   if (!userId || !characterId || !priceCents || priceCents <= 0) {
@@ -53,12 +54,29 @@ export async function POST(request: NextRequest) {
   });
 
   if (!exists) {
-    await prisma.purchase.create({
-      data: {
-        userId,
-        characterId,
-        pricePaid: new Prisma.Decimal(priceCents).div(100),
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.purchase.create({
+        data: {
+          userId,
+          characterId,
+          pricePaid: new Prisma.Decimal(priceCents).div(100),
+          couponId: couponId ?? undefined,
+        },
+      });
+
+      if (couponId) {
+        await tx.coupon.updateMany({
+          where: {
+            id: couponId,
+            userId,
+            status: CouponStatus.ACTIVE,
+          },
+          data: {
+            status: CouponStatus.USED,
+            usedAt: new Date(),
+          },
+        });
+      }
     }).catch(() => null);
   }
 
