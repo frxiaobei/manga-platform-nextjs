@@ -141,6 +141,7 @@ export default function CharacterDetailPage() {
   const totalAssetCount = character.assets.length;
   const stats = [
     { label: "素材数", value: `${totalAssetCount}` },
+    { label: "价格", value: `¥${character.price.toFixed(2)}` },
     ...(character.locked_asset_count > 0 ? [{ label: "未解锁", value: `${character.locked_asset_count}` }] : []),
   ];
 
@@ -244,7 +245,11 @@ export default function CharacterDetailPage() {
               disabled={isPaying || character.is_purchased}
             >
               <ShoppingCart size={24} className="mr-2" />
-              {character.is_purchased ? "已购买" : isPaying ? "跳转支付中..." : "立即购买并下载"}
+              {character.is_purchased
+                ? "已购买"
+                : isPaying
+                ? "跳转支付中..."
+                : `立即购买并下载 (¥${character.price.toFixed(2)})`}
             </Button>
             {purchaseError ? <p className="mt-3 text-sm text-red-300">{purchaseError}</p> : null}
 

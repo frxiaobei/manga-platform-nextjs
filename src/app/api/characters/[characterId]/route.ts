@@ -59,6 +59,7 @@ export async function GET(
     name: character.name,
     description: character.description,
     is_creator: isCreator,
+    price: Number(character.price),
     is_purchased: isPurchased,
     locked_asset_count: lockedAssetCount,
     assets,
