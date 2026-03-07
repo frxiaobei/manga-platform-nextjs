@@ -32,6 +32,12 @@ export default function ResetPasswordPage() {
     hasVerifiedRef.current = true;
 
     async function verifyRecoveryLink() {
+      if (!supabase) {
+        setVerifyState("error");
+        setVerifyMessage("客户端初始化失败");
+        return;
+      }
+      
       const code = searchParams.get("code");
       const tokenHash = searchParams.get("token_hash");
       const type = searchParams.get("type");
@@ -84,6 +90,11 @@ export default function ResetPasswordPage() {
     event.preventDefault();
     setUpdateError(null);
     setUpdateSuccess(null);
+
+    if (!supabase) {
+      setUpdateError("客户端初始化失败");
+      return;
+    }
 
     if (!accessToken) {
       setUpdateError("认证状态失效，请刷新页面后重试。");

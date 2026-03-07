@@ -29,6 +29,10 @@ export default function MyCouponsPage() {
   const fetchCoupons = async (currentStatus: string) => {
     setLoading(true);
     try {
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -59,6 +63,10 @@ export default function MyCouponsPage() {
 
   useEffect(() => {
     const checkSessionAndFetch = async () => {
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         fetchCoupons(status);
