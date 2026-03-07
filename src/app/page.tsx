@@ -1,5 +1,5 @@
-import { PageShell } from "@/components/page-shell";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return <PageShell />;
+  redirect("/login");
 }
