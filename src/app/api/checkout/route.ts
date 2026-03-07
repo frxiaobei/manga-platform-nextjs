@@ -1,8 +1,7 @@
 import Stripe from "stripe";
-import { CouponStatus } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { conflict, notFound, ok, serverError, unauthorized, unprocessable } from "@/lib/http";
+import { conflict, notFound, ok, serverError, unauthorized } from "@/lib/http";
 import { requireAppUser } from "@/lib/auth";
 
 export const runtime = "nodejs";
@@ -15,22 +14,16 @@ export async function POST(request: NextRequest) {
   if (!stripeSecret) return serverError("Stripe is not configured");
 
   const body = (await request.json().catch(() => null)) as
-    | {
-        character_id?: string;
-        success_url?: string;
-        cancel_url?: string;
-        couponId?: string | null;
-        coupon_id?: string | null;
-      }
+    | { character_id?: string; success_url?: string; cancel_url?: string }
     | null;
 
   if (!body?.character_id || !body.success_url || !body.cancel_url) {
-    return unprocessable("character_id, success_url, cancel_url are required");
+    return NextResponse.json({ detail: "character_id, success_url, cancel_url are required" }, { status: 422 });
   }
 
   const character = await prisma.character.findUnique({ where: { id: body.character_id } });
   if (!character) return notFound("Character not found");
-  if (character.status !== "APPROVED") return unprocessable("Character is not purchasable");
+  if (character.status !== "APPROVED") return NextResponse.json({ detail: "Character is not purchasable" }, { status: 400 });
 
   const existingPurchase = await prisma.purchase.findUnique({
     where: {
@@ -40,28 +33,8 @@ export async function POST(request: NextRequest) {
   });
   if (existingPurchase) return conflict("Already purchased");
 
-  const couponId = body.couponId ?? body.coupon_id ?? null;
-  let discountPercent = 0;
-  if (couponId) {
-    const coupon = await prisma.coupon.findFirst({
-      where: {
-        id: couponId,
-        userId: user.id,
-        status: CouponStatus.ACTIVE,
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-      },
-      select: {
-        id: true,
-        discountPercent: true,
-      },
-    });
-    if (!coupon) return unprocessable("Coupon is invalid or unavailable");
-    discountPercent = coupon.discountPercent;
-  }
-
   const stripe = new Stripe(stripeSecret);
-  const originalUnitAmount = Math.round(Number(character.price) * 100);
-  const unitAmount = Math.max(1, Math.round(originalUnitAmount * (100 - discountPercent) / 100));
+  const unitAmount = Math.round(Number(character.price) * 100);
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     success_url: body.success_url,
@@ -79,10 +52,7 @@ export async function POST(request: NextRequest) {
     metadata: {
       user_id: user.id,
       character_id: character.id,
-      coupon_id: couponId ?? "",
-      discount_percent: String(discountPercent),
       price_cents: String(unitAmount),
-      original_price_cents: String(originalUnitAmount),
     },
   });
 
@@ -93,3 +63,5 @@ export async function POST(request: NextRequest) {
     session_id: session.id,
   });
 }
+
+import { NextResponse } from "next/server";

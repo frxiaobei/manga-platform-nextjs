@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/lib/supabase/client";
-import Cropper, { Area } from "react-easy-crop";
+import Cropper from "react-easy-crop";
 import getCroppedImg from "@/lib/crop";
 import { Camera, Loader2, Save, User as UserIcon } from "lucide-react";
 
@@ -43,7 +43,7 @@ export default function ProfileEditPage() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [showCropModal, setShowCropModal] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -78,7 +78,7 @@ export default function ProfileEditPage() {
     fetchUser();
   }, [router]);
 
-  const onCropComplete = (_croppedArea: Area, croppedAreaPixels: Area) => {
+  const onCropComplete = (croppedArea: any, croppedAreaPixels: any) => {
     setCroppedAreaPixels(croppedAreaPixels);
   };
 
