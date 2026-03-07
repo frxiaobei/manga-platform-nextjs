@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 type CharacterItem = {
   id: string;
@@ -107,9 +108,14 @@ export function PageShell() {
 
   return (
     <main className="mx-auto flex min-h-[70vh] max-w-3xl flex-col justify-center gap-6 px-6 py-16">
-      <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">Manga Checkout</p>
-        <h1 className="text-3xl font-semibold tracking-tight">支付页选优惠券</h1>
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">Manga Checkout</p>
+          <h1 className="text-3xl font-semibold tracking-tight">支付页选优惠券</h1>
+        </div>
+        <Link href="/me">
+          <Button variant="outline">进入我的购买</Button>
+        </Link>
       </div>
 
       <section className="space-y-4 rounded-xl border border-border bg-card p-6">
