@@ -66,7 +66,7 @@ export default async function CharacterDetailPage({ params }: PageProps) {
           <div className="flex h-16 items-center justify-between">
             <Link href="/" className="flex items-center text-zinc-400 hover:text-orange-500 transition-colors">
               <ChevronLeft className="mr-2 h-4 w-4" />
-              <span>Back to Browse</span>
+              <span>返回浏览</span>
             </Link>
           </div>
         </div>
@@ -85,7 +85,7 @@ export default async function CharacterDetailPage({ params }: PageProps) {
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-zinc-900 text-zinc-500 text-lg uppercase tracking-widest font-bold">
-            No Hero Asset
+            暂无封面图
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
@@ -101,7 +101,7 @@ export default async function CharacterDetailPage({ params }: PageProps) {
               {!isPurchased && (
                 <Button className="bg-orange-500 hover:bg-orange-600 text-white border-none h-12 px-8 text-base font-semibold shadow-lg shadow-orange-500/20 rounded-lg">
                   <CreditCard className="mr-2 h-5 w-5" />
-                  Unlock Resources for ${character.price.toString()}
+                  解锁资源  ${character.price.toString()}
                 </Button>
               )}
             </div>
@@ -109,19 +109,19 @@ export default async function CharacterDetailPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Assets Grid */}
+      {/* 个资源 Grid */}
       <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
-            <h2 className="text-3xl font-bold text-white tracking-tight">Character Resources</h2>
+            <h2 className="text-3xl font-bold text-white tracking-tight">角色资源</h2>
             <p className="mt-2 text-zinc-500">
-              High-resolution assets including poses, expressions, and costumes.
+              包含多种姿势、表情和服装的高清资源。
             </p>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span className="flex items-center text-zinc-400">
               <span className="w-2 h-2 rounded-full bg-orange-500 mr-2" />
-              {assets.length} Assets
+              {assets.length} 个资源
             </span>
           </div>
         </div>
