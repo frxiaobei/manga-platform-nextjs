@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -12,7 +12,7 @@ type ResetPasswordResponse = {
   detail?: string;
 };
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const hasVerifiedRef = useRef(false);
   const supabase = getSupabaseBrowserClient();
@@ -84,7 +84,7 @@ export default function ResetPasswordPage() {
     }
 
     void verifyRecoveryLink();
-  }, [searchParams]);
+  }, [searchParams, supabase]);
 
   async function handleUpdatePassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -194,5 +194,13 @@ export default function ResetPasswordPage() {
         </form>
       ) : null}
     </main>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">加载中...</div>}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
