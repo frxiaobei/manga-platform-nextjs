@@ -1,17 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, ShoppingCart, Heart, Share2, ShieldCheck, X, AlertTriangle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-
-interface Character {
-  id: string;
-  name: string;
-  description: string;
-  status: string;
-  price: number;
-  assets: Array<{ id: string; category: string; url: string | null; locked: boolean }>;
-}
+import { cn } from "@/lib/utils";
+import { api } from "@/lib/api-client";
+import { RatingStars } from "@/components/rating-stars";
 
 interface User {
   id: string;
@@ -20,39 +18,136 @@ interface User {
 
 export default function CharacterDetailPage() {
   const params = useParams();
-  const id = params.id as string;
-  const [character, setCharacter] = useState<Character | null>(null);
+  const router = useRouter();
+  const characterId = params.id as string;
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
+  const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reason, setReason] = useState("");
 
+  const characterQuery = useQuery({
+    queryKey: ["character", characterId],
+    queryFn: () => api.characters.getById(characterId),
+    enabled: Boolean(characterId),
+  });
+
+  // Fetch user data for admin check
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUser = async () => {
       try {
-        const [charRes, userRes] = await Promise.all([
-          fetch(`/api/characters/${id}`),
-          fetch(`/api/auth/me`).catch(() => null),
-        ]);
-
-        if (charRes.ok) {
-          const charData = await charRes.json();
-          setCharacter(charData);
-        }
-
-        if (userRes && userRes.ok) {
+        const userRes = await fetch(`/api/auth/me`);
+        if (userRes.ok) {
           const userData = await userRes.json();
           setUser(userData);
         }
       } catch (err) {
-        console.error("Failed to fetch data", err);
-      } finally {
-        setLoading(false);
+        console.error("Failed to fetch user", err);
       }
     };
+    fetchUser();
+  }, []);
 
-    fetchData();
-  }, [id]);
+  const images = useMemo(() => {
+    const character = characterQuery.data;
+    if (!character) return [];
+    const urls = character.assets.filter((a) => a.url).map((a) => a.url!);
+    return urls.length > 0 ? urls : ["/placeholder.svg"];
+  }, [characterQuery.data]);
+
+  useEffect(() => {
+    if (selectedImageIndex > images.length - 1) {
+      setSelectedImageIndex(0);
+    }
+  }, [images, selectedImageIndex]);
+
+  const isNotFound =
+    characterQuery.isError &&
+    typeof characterQuery.error === "object" &&
+    "status" in characterQuery.error &&
+    (characterQuery.error as { status: number }).status === 404;
+
+  if (isNotFound) {
+    return (
+      <div className="mx-auto max-w-[1000px] px-6 py-20">
+        <div className="rounded-[2rem] border border-ansha/20 bg-ansha/5 p-10 text-center">
+          <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-ansha/10">
+            <AlertTriangle size={32} className="text-ansha" />
+          </div>
+          <h2 className="mb-2 text-xl font-bold text-white">角色不存在或已下架</h2>
+          <p className="mb-8 text-sm text-white/40">该角色可能已被移除，请返回首页浏览其他角色</p>
+          <Button onClick={() => router.push("/")}>返回首页</Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (characterQuery.isLoading) {
+    return (
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-10 sm:py-12 animate-pulse">
+        <div className="h-6 w-28 bg-white/10 rounded mb-8" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+          <div>
+            <div className="aspect-[3/4] rounded-[3rem] bg-white/10 mb-6" />
+            <div className="grid grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="aspect-[3/4] rounded-2xl bg-white/10" />
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="h-12 w-2/3 bg-white/10 rounded mb-4" />
+            <div className="h-6 w-1/2 bg-white/10 rounded mb-8" />
+            <div className="h-64 w-full rounded-[2.5rem] bg-white/10 mb-8" />
+            <div className="h-40 w-full rounded-[2rem] bg-white/10" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (characterQuery.isError || !characterQuery.data) {
+    return (
+      <div className="mx-auto max-w-[1000px] px-4 sm:px-6 py-16 sm:py-20">
+        <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 text-center">
+          <p className="text-white/60 mb-4">角色详情加载失败，请稍后重试。</p>
+          <div className="flex items-center justify-center gap-3">
+            <Button variant="outline" onClick={() => characterQuery.refetch()}>
+              重试
+            </Button>
+            <Button onClick={() => router.push("/")}>返回首页</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const character = characterQuery.data;
+  const totalAssetCount = character.assets.length;
+  const stats = [
+    { label: "素材数", value: `${totalAssetCount}` },
+    ...(character.locked_asset_count > 0 ? [{ label: "未解锁", value: `${character.locked_asset_count}` }] : []),
+  ];
+
+  const handlePurchase = async () => {
+    setPurchaseError(null);
+    setIsPaying(true);
+    try {
+      const origin = window.location.origin;
+      const response = await api.checkout.createSession(
+        character.id,
+        `${origin}/characters/${character.id}?purchased=true`,
+        `${origin}/characters/${character.id}`
+      );
+      window.location.assign(response.checkout_url);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "创建支付会话失败，请稍后重试。";
+      setPurchaseError(message);
+      setIsPaying(false);
+    }
+  };
 
   const handleReview = async (status: "APPROVED" | "REJECTED" | "NEEDS_CHANGES") => {
     if (status !== "APPROVED" && !reason) {
@@ -62,7 +157,7 @@ export default function CharacterDetailPage() {
 
     setReviewLoading(true);
     try {
-      const res = await fetch(`/api/admin/reviews/${id}`, {
+      const res = await fetch(`/api/admin/reviews/${characterId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status, reason }),
@@ -82,51 +177,99 @@ export default function CharacterDetailPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">加载中...</div>;
-  if (!character) return <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">未找到角色</div>;
-
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white p-8">
-      <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Left: Images */}
-        <div className="space-y-4">
-          <div className="aspect-[3/4] bg-[#111] rounded-xl overflow-hidden border border-white/10 relative">
-            {character.assets[0]?.url ? (
-              <img src={character.assets[0].url} alt={character.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-500">封面图</div>
+    <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-10 sm:py-12">
+      {/* Navigation */}
+      <button
+        onClick={() => router.push("/characters")}
+        className="flex items-center gap-2 text-white/40 hover:text-white transition-colors mb-8 group"
+      >
+        <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+        <span className="font-bold uppercase tracking-wider text-xs">返回列表</span>
+      </button>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+        {/* Left: Image Gallery */}
+        <div className="space-y-4 sm:space-y-6">
+          <motion.div
+            layoutId="main-image"
+            onClick={() => setIsLightboxOpen(true)}
+            className="aspect-[3/4] rounded-[2rem] md:rounded-[3rem] overflow-hidden bg-white/5 border border-white/5 cursor-zoom-in relative group"
+          >
+            {images[selectedImageIndex] && (
+              <img
+                src={images[selectedImageIndex]}
+                alt={character.name}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
             )}
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            {character.assets.slice(1).map((asset, index) => (
-              <div key={asset.id} className="aspect-square bg-[#111] rounded-lg overflow-hidden border border-white/5 relative">
-                {asset.url ? (
-                  <img src={asset.url} alt={`${character.name} asset ${index + 1}`} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-[10px] text-gray-600">
-                    {asset.locked ? "已锁定" : "无图"}
-                  </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/40 to-transparent" />
+          </motion.div>
+
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 sm:gap-4">
+            {images.map((img, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedImageIndex(index)}
+                className={cn(
+                  "aspect-[3/4] rounded-2xl overflow-hidden border-2 transition-all",
+                  selectedImageIndex === index ? "border-ansha scale-95" : "border-transparent opacity-40 hover:opacity-100"
                 )}
-              </div>
+              >
+                <img src={img} alt="" className="w-full h-full object-cover" />
+              </button>
             ))}
           </div>
         </div>
 
-        {/* Right: Info & Actions */}
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-4xl font-bold mb-2">{character.name}</h1>
-            <p className="text-gray-400 leading-relaxed">{character.description || "暂无描述"}</p>
+        {/* Right: Info */}
+        <div className="flex flex-col">
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter mb-2">{character.name}</h1>
+            <p className="text-xl sm:text-2xl text-white/40 font-medium">角色 #{character.id.slice(0, 6)}</p>
           </div>
 
-          <div className="p-4 bg-[#111] rounded-xl border border-white/10">
-            <div className="text-sm text-gray-400 mb-1">价格</div>
-            <div className="text-2xl font-bold text-[#f97316]">¥ {character.price || 0}</div>
+          <div className="bg-white/5 border border-white/5 rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-6 md:p-8 mb-6 md:mb-8">
+            <div className="flex items-center justify-end mb-6 md:mb-8">
+              <div className="flex gap-2">
+                <Button variant="outline" size="icon" className="rounded-2xl">
+                  <Heart size={24} />
+                </Button>
+                <Button variant="outline" size="icon" className="rounded-2xl">
+                  <Share2 size={24} />
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
+              {stats.map((stat) => (
+                <div key={stat.label} className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                  <span className="text-[10px] text-white/40 block uppercase tracking-widest mb-1">{stat.label}</span>
+                  <span className="font-bold">{stat.value}</span>
+                </div>
+              ))}
+            </div>
+
+            <Button
+              className="w-full h-14 sm:h-16 text-base sm:text-lg rounded-[1.25rem] sm:rounded-[1.5rem]"
+              size="lg"
+              onClick={handlePurchase}
+              disabled={isPaying || character.is_purchased}
+            >
+              <ShoppingCart size={24} className="mr-2" />
+              {character.is_purchased ? "已购买" : isPaying ? "跳转支付中..." : "立即购买并下载"}
+            </Button>
+            {purchaseError ? <p className="mt-3 text-sm text-red-300">{purchaseError}</p> : null}
+
+            <p className="text-center text-xs text-white/20 mt-4 flex items-center justify-center gap-1">
+              <ShieldCheck size={14} />
+              购买后永久拥有，支持商业用途许可
+            </p>
           </div>
 
           {/* Admin Review Panel */}
           {user?.role === "ADMIN" && (
-            <div className="mt-8 p-6 bg-[#1a1a1a] rounded-xl border border-[#f97316]/20 space-y-4">
+            <div className="mb-6 md:mb-8 p-6 bg-[#1a1a1a] rounded-[2rem] border border-[#f97316]/20 space-y-4">
               <h3 className="text-lg font-semibold text-[#f97316]">管理员审核</h3>
               
               <div className="space-y-2">
@@ -165,11 +308,42 @@ export default function CharacterDetailPage() {
             </div>
           )}
 
-          <Button className="w-full bg-white text-black hover:bg-gray-200 py-6 rounded-xl font-bold">
-            立即购买
-          </Button>
+          <RatingStars characterId={character.id} />
+
+          <div className="space-y-4 md:space-y-6 pt-6 md:pt-8">
+            <h3 className="text-xl font-bold tracking-tight border-b border-white/5 pb-4">角色设定</h3>
+            <p className="text-white/60 leading-relaxed text-base sm:text-lg">
+              {character.description ?? "暂无角色描述"}
+            </p>
+          </div>
         </div>
       </div>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {isLightboxOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-zinc-950/95 flex items-center justify-center p-4 md:p-12"
+          >
+            <button
+              onClick={() => setIsLightboxOpen(false)}
+              className="absolute top-8 right-8 size-12 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors z-[210]"
+            >
+              <X size={24} />
+            </button>
+            <motion.img
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              src={images[selectedImageIndex]}
+              className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
