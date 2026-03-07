@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function PageShell() {
   return (
@@ -6,7 +7,9 @@ export function PageShell() {
       <p className="text-sm text-muted-foreground">Manga Platform (Next.js)</p>
       <h1 className="text-3xl font-semibold tracking-tight">迁移基础已完成</h1>
       <p className="text-muted-foreground">Prisma + Supabase Auth/Storage + API Routes + shadcn/ui 已接入。</p>
-      <Button>Explore API</Button>
+      <Link href="/characters">
+        <Button>进入角色列表</Button>
+      </Link>
     </main>
   );
 }
