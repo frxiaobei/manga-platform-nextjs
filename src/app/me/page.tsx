@@ -80,9 +80,14 @@ export default function DashboardPage() {
       <section className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-white/40 mb-3">个人中心</p>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">{getUserDisplayName(user.email)}</h1>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">{getUserDisplayName(user.email, user.name)}</h1>
           <p className="text-white/40">查看我买的、我上架的，以及角色审核状态。</p>
         </div>
+        <Link href="/me/profile">
+          <Button variant="outline" className="h-11 px-5 rounded-2xl">
+            编辑资料
+          </Button>
+        </Link>
       </section>
 
       {/* Mobile tabs */}

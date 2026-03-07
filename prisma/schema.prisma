@@ -41,6 +41,7 @@ model User {
   supabaseId   String       @unique
   email        String       @unique
   name         String?
+  bio          String?
   avatar       String?
   role         Role         @default(USER)
   authProvider String       @default("supabase")
