@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type VerifyState = "loading" | "ready" | "error";
 
@@ -15,6 +15,7 @@ type ResetPasswordResponse = {
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
   const hasVerifiedRef = useRef(false);
+  const supabase = getSupabaseBrowserClient();
 
   const [verifyState, setVerifyState] = useState<VerifyState>("loading");
   const [verifyMessage, setVerifyMessage] = useState("正在验证重置链接...");

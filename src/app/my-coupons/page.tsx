@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,6 +24,7 @@ export default function MyCouponsPage() {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("active");
   const router = useRouter();
+  const supabase = getSupabaseBrowserClient();
 
   const fetchCoupons = async (currentStatus: string) => {
     setLoading(true);
