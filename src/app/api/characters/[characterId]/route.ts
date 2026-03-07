@@ -56,6 +56,7 @@ export async function GET(
 
   if (!character) return notFound("Character not found");
 
+  const isCreator = Boolean(user && user.id === character.userId);
   let isPurchased = false;
   const isOwner = user?.id === character.userId;
   if (user) {
@@ -71,13 +72,25 @@ export async function GET(
     isPurchased = Boolean(purchase) || isOwner;
   }
 
-  const lockedAssetCount = isPurchased ? 0 : Math.max(character.assets.length - 1, 0);
-  const assets = character.assets.map((asset, index) => ({
-    id: asset.id,
-    category: assetCategoryToApi(asset.category),
-    url: isPurchased || index === 0 ? asset.url : null,
-    locked: !(isPurchased || index === 0),
-  }));
+  const hasFullAccess = isCreator || isPurchased;
+  const lockedAssetCount = hasFullAccess
+    ? 0
+    : character.assets.filter((asset) => asset.category !== AssetCategory.HERO).length;
+
+  const assets = character.assets.map((asset) => {
+    const isHero = asset.category === AssetCategory.HERO;
+    const isLocked = !(hasFullAccess || isHero);
+
+    return {
+      id: asset.id,
+      category: assetCategoryToApi(asset.category),
+      url: asset.url,
+      locked: isLocked,
+      is_blurred: isLocked,
+      blur_note: isLocked ? "preview_blurred_for_unpurchased_user" : null,
+      download_url: isPurchased ? asset.url : null,
+    };
+  });
 
   return ok({
     id: character.id,
@@ -87,6 +100,7 @@ export async function GET(
     price: Number(character.price),
     status: character.status.toLowerCase(),
     tags: splitTags(character.tagsCsv),
+    is_creator: isCreator,
     is_purchased: isPurchased,
     locked_asset_count: lockedAssetCount,
     assets,
