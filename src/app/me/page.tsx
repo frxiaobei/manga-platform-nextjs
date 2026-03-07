@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Clock, CheckCircle, AlertCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,8 +29,16 @@ type DashboardTabKey = (typeof dashboardTabs)[number]["key"];
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<DashboardTabKey>("purchased");
+  const router = useRouter();
   const meQuery = useCurrentUser();
   const user = meQuery.data;
+
+  // 未登录时自动跳转到登录页
+  useEffect(() => {
+    if (!meQuery.isLoading && !user) {
+      router.replace("/login?redirect=/me");
+    }
+  }, [meQuery.isLoading, user, router]);
 
   const charactersQuery = useQuery({
     queryKey: ["dashboard-characters"],
@@ -53,24 +62,12 @@ export default function DashboardPage() {
   const showListed = activeTab === "listed";
   const showReview = activeTab === "review";
 
-  if (meQuery.isLoading || charactersQuery.isLoading || purchasesQuery.isLoading) {
+  // 加载中或未登录（未登录会被 useEffect 重定向）
+  if (meQuery.isLoading || charactersQuery.isLoading || purchasesQuery.isLoading || !user) {
     return (
       <div className="mx-auto max-w-[1400px] px-6 py-12">
         <div className="h-12 w-64 rounded bg-white/10 animate-pulse mb-6" />
         <div className="h-24 w-full rounded-[2rem] bg-white/5 animate-pulse" />
-      </div>
-    );
-  }
-
-  if (meQuery.isError || !user) {
-    return (
-      <div className="mx-auto max-w-[1000px] px-6 py-20">
-        <div className="rounded-[2rem] border border-red-500/30 bg-red-500/10 p-8 text-center">
-          <p className="text-red-300 mb-4">个人中心加载失败，请先登录。</p>
-          <Link href="/login">
-            <Button variant="outline">去登录</Button>
-          </Link>
-        </div>
       </div>
     );
   }

@@ -1,7 +1,8 @@
 "use client";
 
-import { ChangeEvent, useMemo, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
@@ -71,6 +72,7 @@ function drawCroppedAvatar(image: HTMLImageElement, pixelCrop: PixelCrop): Promi
 
 export function ProfilePage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const imageRef = useRef<HTMLImageElement | null>(null);
 
   const [nicknameDraft, setNicknameDraft] = useState<string | null>(null);
@@ -86,6 +88,13 @@ export function ProfilePage() {
     queryFn: api.me.profile,
     retry: false,
   });
+
+  // 未登录时自动跳转到登录页
+  useEffect(() => {
+    if (!profileQuery.isLoading && profileQuery.isError) {
+      router.replace("/login?redirect=/profile");
+    }
+  }, [profileQuery.isLoading, profileQuery.isError, router]);
 
   const nickname = nicknameDraft ?? profileQuery.data?.nickname ?? "";
   const bio = bioDraft ?? profileQuery.data?.bio ?? "";
@@ -161,24 +170,12 @@ export function ProfilePage() {
     reader.readAsDataURL(file);
   };
 
-  if (profileQuery.isLoading) {
+  // 加载中或未登录（未登录会被 useEffect 重定向）
+  if (profileQuery.isLoading || profileQuery.isError || !profileQuery.data) {
     return (
       <div className="mx-auto max-w-[980px] px-4 sm:px-6 py-12 space-y-6">
         <div className="h-10 w-40 rounded bg-white/10 animate-pulse" />
         <div className="h-72 rounded-[2rem] bg-white/5 animate-pulse" />
-      </div>
-    );
-  }
-
-  if (profileQuery.isError || !profileQuery.data) {
-    return (
-      <div className="mx-auto max-w-[800px] px-6 py-20">
-        <div className="rounded-[2rem] border border-red-500/30 bg-red-500/10 p-8 text-center">
-          <p className="text-red-300 mb-4">资料页面加载失败，请先登录。</p>
-          <Link href="/login">
-            <Button variant="outline">去登录</Button>
-          </Link>
-        </div>
       </div>
     );
   }
