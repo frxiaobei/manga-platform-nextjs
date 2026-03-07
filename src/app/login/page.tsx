@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -105,9 +106,9 @@ export default function LoginPage() {
 
           {!isRegister && (
             <div className="flex justify-end">
-              <button type="button" className="text-xs text-white/40 hover:text-ansha transition-colors">
+              <Link href="/forgot-password" className="text-xs text-white/40 hover:text-ansha transition-colors">
                 忘记密码？
-              </button>
+              </Link>
             </div>
           )}
 

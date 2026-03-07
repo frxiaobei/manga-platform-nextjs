@@ -11,6 +11,11 @@ import { cn } from "@/lib/utils";
 import { api } from "@/lib/api-client";
 import { RatingStars } from "@/components/rating-stars";
 
+interface User {
+  id: string;
+  role: "ADMIN" | "USER";
+}
+
 export default function CharacterDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -19,12 +24,31 @@ export default function CharacterDetailPage() {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reason, setReason] = useState("");
 
   const characterQuery = useQuery({
     queryKey: ["character", characterId],
     queryFn: () => api.characters.getById(characterId),
     enabled: Boolean(characterId),
   });
+
+  // Fetch user data for admin check
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userRes = await fetch(`/api/auth/me`);
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          setUser(userData);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user", err);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const images = useMemo(() => {
     const character = characterQuery.data;
@@ -125,6 +149,34 @@ export default function CharacterDetailPage() {
     }
   };
 
+  const handleReview = async (status: "APPROVED" | "REJECTED" | "NEEDS_CHANGES") => {
+    if (status !== "APPROVED" && !reason) {
+      alert("请输入审核意见/拒绝理由");
+      return;
+    }
+
+    setReviewLoading(true);
+    try {
+      const res = await fetch(`/api/admin/reviews/${characterId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, reason }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "审核操作失败");
+      }
+
+      alert("审核完成");
+      window.location.reload();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "审核操作失败");
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-10 sm:py-12">
       {/* Navigation */}
@@ -214,6 +266,47 @@ export default function CharacterDetailPage() {
               购买后永久拥有，支持商业用途许可
             </p>
           </div>
+
+          {/* Admin Review Panel */}
+          {user?.role === "ADMIN" && (
+            <div className="mb-6 md:mb-8 p-6 bg-[#1a1a1a] rounded-[2rem] border border-[#f97316]/20 space-y-4">
+              <h3 className="text-lg font-semibold text-[#f97316]">管理员审核</h3>
+              
+              <div className="space-y-2">
+                <label className="text-sm text-gray-400">审核意见 / 理由 (拒绝或需修改时必填)</label>
+                <textarea
+                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+                  placeholder="请输入理由..."
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <Button 
+                  onClick={() => handleReview("APPROVED")} 
+                  disabled={reviewLoading}
+                  className="bg-green-600 hover:bg-green-700 text-xs"
+                >
+                  通过
+                </Button>
+                <Button 
+                  onClick={() => handleReview("NEEDS_CHANGES")} 
+                  disabled={reviewLoading}
+                  className="bg-yellow-600 hover:bg-yellow-700 text-xs"
+                >
+                  需修改
+                </Button>
+                <Button 
+                  onClick={() => handleReview("REJECTED")} 
+                  disabled={reviewLoading}
+                  className="bg-red-600 hover:bg-red-700 text-xs"
+                >
+                  拒绝
+                </Button>
+              </div>
+            </div>
+          )}
 
           <RatingStars characterId={character.id} />
 

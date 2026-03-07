@@ -116,7 +116,7 @@ export default function DashboardPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {myPurchased.map((item) => (
-              <Link key={item.character_id} href={`/characters/${item.character_id}`} className="rounded-2xl border border-white/10 bg-zinc-900/50 p-4 hover:border-white/20 transition-colors">
+              <Link key={item.character_id} href={`/me/purchases/${item.character_id}`} className="rounded-2xl border border-white/10 bg-zinc-900/50 p-4 hover:border-white/20 transition-colors">
                 {item.hero_image_url && (
                   <img
                     src={item.hero_image_url}
@@ -125,7 +125,7 @@ export default function DashboardPage() {
                   />
                 )}
                 <p className="font-bold">{item.character_name}</p>
-                <p className="mt-1 text-xs text-white/50">支付 ${item.price_paid.toFixed(2)}</p>
+                <p className="mt-1 text-xs text-white/50">支付 ¥{item.price_paid.toFixed(2)}</p>
               </Link>
             ))}
           </div>
