@@ -102,7 +102,7 @@ export default function MyCouponsPage() {
               <p>
                 {status === "active" ? "暂无可用优惠券" : status === "used" ? "暂无已用记录" : "暂无过期优惠券"}
               </p>
-              <Button variant="link" className="mt-2" onClick={() => router.push("/")}>
+              <Button variant="outline" className="mt-2" onClick={() => router.push("/")}>
                 去选购角色
               </Button>
             </Card>
