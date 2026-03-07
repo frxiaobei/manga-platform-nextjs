@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 type CharacterItem = {
   id: string;
@@ -108,7 +109,7 @@ export function PageShell() {
   return (
     <main className="mx-auto flex min-h-[70vh] max-w-3xl flex-col justify-center gap-6 px-6 py-16">
       <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">Manga Checkout</p>
+        <p className="text-sm text-muted-foreground">Manga Platform (Next.js)</p>
         <h1 className="text-3xl font-semibold tracking-tight">支付页选优惠券</h1>
       </div>
 
@@ -171,9 +172,20 @@ export function PageShell() {
             </div>
 
             {error ? <p className="text-sm text-destructive">{error}</p> : null}
-            <Button disabled={!selectedCharacterId || paying} onClick={onPay}>
-              {paying ? "跳转支付中..." : "立即支付"}
-            </Button>
+            <div className="flex flex-col gap-3">
+              <Button disabled={!selectedCharacterId || paying} onClick={onPay}>
+                {paying ? "跳转支付中..." : "立即支付"}
+              </Button>
+              
+              <div className="mt-4 flex gap-4 pt-4 border-t border-border">
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/profile">查看个人资料</Link>
+                </Button>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/profile/edit">编辑资料</Link>
+                </Button>
+              </div>
+            </div>
           </>
         ) : null}
       </section>

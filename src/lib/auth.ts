@@ -52,9 +52,8 @@ export async function requireAppUser(request: NextRequest) {
       googleSub: identity.provider === "google" ? identity.id : undefined,
     },
     update: {
+      // Only update fields that are critical for auth sync
       email: identity.email,
-      name: identity.name ?? undefined,
-      avatar: identity.avatar ?? undefined,
       authProvider: identity.provider ?? "supabase",
       googleSub: identity.provider === "google" ? identity.id : undefined,
     },
