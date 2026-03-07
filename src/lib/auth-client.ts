@@ -24,7 +24,9 @@ export const ensureAuthErrorHandled = (error: unknown): void => {
   }
 };
 
-export const getUserDisplayName = (email: string): string => {
-  const name = email.split("@")[0]?.trim();
-  return name && name.length > 0 ? name : email;
+export const getUserDisplayName = (email: string, name?: string | null): string => {
+  const displayName = name?.trim();
+  if (displayName) return displayName;
+  const localPart = email.split("@")[0]?.trim();
+  return localPart && localPart.length > 0 ? localPart : email;
 };

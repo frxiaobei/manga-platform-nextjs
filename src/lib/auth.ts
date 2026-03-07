@@ -53,8 +53,6 @@ export async function requireAppUser(request: NextRequest) {
     },
     update: {
       email: identity.email,
-      name: identity.name ?? undefined,
-      avatar: identity.avatar ?? undefined,
       authProvider: identity.provider ?? "supabase",
       googleSub: identity.provider === "google" ? identity.id : undefined,
     },

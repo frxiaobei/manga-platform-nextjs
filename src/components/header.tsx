@@ -34,10 +34,10 @@ export function Header() {
                 <img src={user.avatar} alt={user.email} className="size-8 rounded-xl object-cover" />
               ) : (
                 <div className="size-8 rounded-xl bg-white/10 text-xs font-bold flex items-center justify-center">
-                  {getUserDisplayName(user?.email ?? "").slice(0, 1).toUpperCase()}
+                  {getUserDisplayName(user?.email ?? "", user?.name).slice(0, 1).toUpperCase()}
                 </div>
               )}
-              <span className="text-sm font-medium text-white/80">{getUserDisplayName(user?.email ?? "")}</span>
+              <span className="text-sm font-medium text-white/80">{getUserDisplayName(user?.email ?? "", user?.name)}</span>
             </Link>
           ) : (
             <Link href="/login">
@@ -82,10 +82,10 @@ export function Header() {
                   <img src={user.avatar} alt={user.email} className="size-8 rounded-xl object-cover" />
                 ) : (
                   <div className="size-8 rounded-xl bg-white/10 text-xs font-bold flex items-center justify-center">
-                    {getUserDisplayName(user?.email ?? "").slice(0, 1).toUpperCase()}
+                    {getUserDisplayName(user?.email ?? "", user?.name).slice(0, 1).toUpperCase()}
                   </div>
                 )}
-                <span className="text-sm font-medium text-white/80">{getUserDisplayName(user?.email ?? "")}</span>
+                <span className="text-sm font-medium text-white/80">{getUserDisplayName(user?.email ?? "", user?.name)}</span>
               </Link>
             ) : (
               <Link href="/login" onClick={closeMobileMenu}>

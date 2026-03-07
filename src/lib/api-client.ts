@@ -87,10 +87,21 @@ export type ApiCharacterDetail = {
 export type UserPublic = {
   id: string;
   email: string;
+  name: string | null;
+  bio: string | null;
   role: string;
   authProvider: string;
   avatar: string | null;
   createdAt: string;
+};
+
+export type UserProfile = {
+  id: string;
+  email: string;
+  nickname: string;
+  bio: string;
+  avatar: string | null;
+  updatedAt: string;
 };
 
 export type AuthResponse = {
@@ -175,6 +186,20 @@ export const api = {
   },
   me: {
     purchases: () => fetchJson<MyPurchaseItem[]>("/api/me/purchases"),
+    profile: () => fetchJson<UserProfile>("/api/me/profile"),
+    updateProfile: (payload: { nickname: string; bio: string }) =>
+      fetchJson<UserProfile>("/api/me/profile", {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      }),
+    uploadAvatar: (file: File) => {
+      const data = new FormData();
+      data.append("avatar", file);
+      return fetchJson<{ avatar: string }>("/api/me/profile/avatar", {
+        method: "POST",
+        body: data,
+      });
+    },
   },
 };
 
