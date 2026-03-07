@@ -207,4 +207,3 @@ function getAssetLabel(category: string) {
   };
   return labels[category] || category;
 }
-
